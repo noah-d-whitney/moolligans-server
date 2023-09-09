@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "@babel/preset-typescript": "^7.21.4",
+    "@medusajs/admin": "^7.0.2",
+    "@medusajs/cache-inmemory": "^1.8.4",
+    "@medusajs/cache-redis": "^1.8.4",
+    "@medusajs/event-bus-local": "^1.9.1",
+    "@medusajs/event-bus-redis": "^1.8.4",
+    "@medusajs/medusa": "nextjs-commerce",
+    "@medusajs/medusa-cli": "^1.3.12",
+    "babel-preset-medusa-package": "^1.1.13",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.2",
+    "medusa-fulfillment-manual": "^1.1.37",
+    "medusa-interfaces": "^1.3.7",
+    "medusa-payment-manual": "^1.0.23",
+    "medusa-payment-stripe": "nextjs-commerce",
+    "medusa-plugin-printful": "^1.5.6",
+    "typeorm": "npm:@medusajs/typeorm@next"
+  },
+  "modifiedAt": 0,
+  "plugins": [],
+  "options": {
+    "backend": "/",
+    "path": "/app",
+    "outDir": "build"
+  }
+}
