@@ -4,7 +4,7 @@ import {
   Fulfillment,
   LineItem,
   Swap,
-} from "@medusajs/medusa"
+} from "@medusajs/medusa";
 import {
   useAdminCancelOrder,
   useAdminCapturePayment,
@@ -12,9 +12,9 @@ import {
   useAdminRegion,
   useAdminReservations,
   useAdminUpdateOrder,
-} from "medusa-react"
-import { useNavigate, useParams } from "react-router-dom"
-import OrderEditProvider, { OrderEditContext } from "../edit/context"
+} from "medusa-react";
+import { useNavigate, useParams } from "react-router-dom";
+import OrderEditProvider, { OrderEditContext } from "../edit/context";
 import {
   DisplayTotal,
   FormattedAddress,
@@ -23,74 +23,74 @@ import {
   OrderStatusComponent,
   PaymentActionables,
   PaymentStatusComponent,
-} from "./templates"
+} from "./templates";
 
-import { capitalize } from "lodash"
-import moment from "moment"
-import { useEffect, useMemo, useState } from "react"
-import { useHotkeys } from "react-hotkeys-hook"
-import Avatar from "../../../components/atoms/avatar"
-import BackButton from "../../../components/atoms/back-button"
-import Spacer from "../../../components/atoms/spacer"
-import Spinner from "../../../components/atoms/spinner"
-import Tooltip from "../../../components/atoms/tooltip"
-import WidgetContainer from "../../../components/extensions/widget-container"
-import Button from "../../../components/fundamentals/button"
-import DetailsIcon from "../../../components/fundamentals/details-icon"
-import CancelIcon from "../../../components/fundamentals/icons/cancel-icon"
-import ClipboardCopyIcon from "../../../components/fundamentals/icons/clipboard-copy-icon"
-import CornerDownRightIcon from "../../../components/fundamentals/icons/corner-down-right-icon"
-import DollarSignIcon from "../../../components/fundamentals/icons/dollar-sign-icon"
-import MailIcon from "../../../components/fundamentals/icons/mail-icon"
-import RefreshIcon from "../../../components/fundamentals/icons/refresh-icon"
-import TruckIcon from "../../../components/fundamentals/icons/truck-icon"
-import { ActionType } from "../../../components/molecules/actionables"
-import JSONView from "../../../components/molecules/json-view"
-import BodyCard from "../../../components/organisms/body-card"
-import RawJSON from "../../../components/organisms/raw-json"
-import Timeline from "../../../components/organisms/timeline"
-import { AddressType } from "../../../components/templates/address-form"
-import TransferOrdersModal from "../../../components/templates/transfer-orders-modal"
-import useClipboard from "../../../hooks/use-clipboard"
-import useImperativeDialog from "../../../hooks/use-imperative-dialog"
-import useNotification from "../../../hooks/use-notification"
-import useToggleState from "../../../hooks/use-toggle-state"
-import { useFeatureFlag } from "../../../providers/feature-flag-provider"
-import { useWidgets } from "../../../providers/widget-provider"
-import { isoAlpha2Countries } from "../../../utils/countries"
-import { getErrorMessage } from "../../../utils/error-messages"
-import extractCustomerName from "../../../utils/extract-customer-name"
-import { formatAmountWithSymbol } from "../../../utils/prices"
-import OrderEditModal from "../edit/modal"
-import AddressModal from "./address-modal"
-import CreateFulfillmentModal from "./create-fulfillment"
-import SummaryCard from "./detail-cards/summary"
-import EmailModal from "./email-modal"
-import MarkShippedModal from "./mark-shipped"
-import CreateRefundModal from "./refund"
+import { capitalize } from "lodash";
+import moment from "moment";
+import { useEffect, useMemo, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import Avatar from "../../../components/atoms/avatar";
+import BackButton from "../../../components/atoms/back-button";
+import Spacer from "../../../components/atoms/spacer";
+import Spinner from "../../../components/atoms/spinner";
+import Tooltip from "../../../components/atoms/tooltip";
+import WidgetContainer from "../../../components/extensions/widget-container";
+import Button from "../../../components/fundamentals/button";
+import DetailsIcon from "../../../components/fundamentals/details-icon";
+import CancelIcon from "../../../components/fundamentals/icons/cancel-icon";
+import ClipboardCopyIcon from "../../../components/fundamentals/icons/clipboard-copy-icon";
+import CornerDownRightIcon from "../../../components/fundamentals/icons/corner-down-right-icon";
+import DollarSignIcon from "../../../components/fundamentals/icons/dollar-sign-icon";
+import MailIcon from "../../../components/fundamentals/icons/mail-icon";
+import RefreshIcon from "../../../components/fundamentals/icons/refresh-icon";
+import TruckIcon from "../../../components/fundamentals/icons/truck-icon";
+import { ActionType } from "../../../components/molecules/actionables";
+import JSONView from "../../../components/molecules/json-view";
+import BodyCard from "../../../components/organisms/body-card";
+import RawJSON from "../../../components/organisms/raw-json";
+import Timeline from "../../../components/organisms/timeline";
+import { AddressType } from "../../../components/templates/address-form";
+import TransferOrdersModal from "../../../components/templates/transfer-orders-modal";
+import useClipboard from "../../../hooks/use-clipboard";
+import useImperativeDialog from "../../../hooks/use-imperative-dialog";
+import useNotification from "../../../hooks/use-notification";
+import useToggleState from "../../../hooks/use-toggle-state";
+import { useFeatureFlag } from "../../../providers/feature-flag-provider";
+import { useWidgets } from "../../../providers/widget-provider";
+import { isoAlpha2Countries } from "../../../utils/countries";
+import { getErrorMessage } from "../../../utils/error-messages";
+import extractCustomerName from "../../../utils/extract-customer-name";
+import { formatAmountWithSymbol } from "../../../utils/prices";
+import OrderEditModal from "../edit/modal";
+import AddressModal from "./address-modal";
+import CreateFulfillmentModal from "./create-fulfillment";
+import SummaryCard from "./detail-cards/summary";
+import EmailModal from "./email-modal";
+import MarkShippedModal from "./mark-shipped";
+import CreateRefundModal from "./refund";
 
 type OrderDetailFulfillment = {
-  title: string
-  type: string
-  fulfillment: Fulfillment
-  swap?: Swap
-  claim?: ClaimOrder
-}
+  title: string;
+  type: string;
+  fulfillment: Fulfillment;
+  swap?: Swap;
+  claim?: ClaimOrder;
+};
 
 const gatherAllFulfillments = (order) => {
   if (!order) {
-    return []
+    return [];
   }
 
-  const all: OrderDetailFulfillment[] = []
+  const all: OrderDetailFulfillment[] = [];
 
   order.fulfillments.forEach((f, index) => {
     all.push({
       title: `Fulfillment #${index + 1}`,
       type: "default",
       fulfillment: f,
-    })
-  })
+    });
+  });
 
   if (order.claims?.length) {
     order.claims.forEach((claim) => {
@@ -101,10 +101,10 @@ const gatherAllFulfillments = (order) => {
             type: "claim",
             fulfillment,
             claim,
-          })
-        })
+          });
+        });
       }
-    })
+    });
   }
 
   if (order.swaps?.length) {
@@ -116,56 +116,56 @@ const gatherAllFulfillments = (order) => {
             type: "swap",
             fulfillment,
             swap,
-          })
-        })
+          });
+        });
       }
-    })
+    });
   }
 
-  return all
-}
+  return all;
+};
 
 const OrderDetails = () => {
-  const { id } = useParams()
+  const { id } = useParams();
 
-  const dialog = useImperativeDialog()
+  const dialog = useImperativeDialog();
 
   const [addressModal, setAddressModal] = useState<null | {
-    address?: Address | null
-    type: AddressType
-  }>(null)
+    address?: Address | null;
+    type: AddressType;
+  }>(null);
 
   const [emailModal, setEmailModal] = useState<null | {
-    email: string
-  }>(null)
+    email: string;
+  }>(null);
 
   const { state: showTransferOrderModal, toggle: toggleTransferOrderModal } =
-    useToggleState()
+    useToggleState();
 
-  const [showFulfillment, setShowFulfillment] = useState(false)
-  const [showRefund, setShowRefund] = useState(false)
-  const [fullfilmentToShip, setFullfilmentToShip] = useState(null)
+  const [showFulfillment, setShowFulfillment] = useState(false);
+  const [showRefund, setShowRefund] = useState(false);
+  const [fullfilmentToShip, setFullfilmentToShip] = useState(null);
 
-  const { order, isLoading } = useAdminOrder(id!)
+  const { order, isLoading } = useAdminOrder(id!);
 
-  const capturePayment = useAdminCapturePayment(id!)
-  const cancelOrder = useAdminCancelOrder(id!)
+  const capturePayment = useAdminCapturePayment(id!);
+  const cancelOrder = useAdminCancelOrder(id!);
 
   const {
     state: addressModalState,
     close: closeAddressModal,
     open: openAddressModal,
-  } = useToggleState()
+  } = useToggleState();
 
-  const { mutate: updateOrder } = useAdminUpdateOrder(id!)
+  const { mutate: updateOrder } = useAdminUpdateOrder(id!);
 
   const { region } = useAdminRegion(order?.region_id!, {
     enabled: !!order?.region_id,
-  })
-  const { isFeatureEnabled } = useFeatureFlag()
+  });
+  const { isFeatureEnabled } = useFeatureFlag();
   const inventoryEnabled = useMemo(() => {
-    return isFeatureEnabled("inventoryService")
-  }, [isFeatureEnabled])
+    return isFeatureEnabled("inventoryService");
+  }, [isFeatureEnabled]);
 
   const { reservations, refetch: refetchReservations } = useAdminReservations(
     {
@@ -174,32 +174,32 @@ const OrderDetails = () => {
     {
       enabled: inventoryEnabled,
     }
-  )
+  );
 
   useEffect(() => {
     if (inventoryEnabled) {
-      refetchReservations()
+      refetchReservations();
     }
-  }, [inventoryEnabled, refetchReservations])
+  }, [inventoryEnabled, refetchReservations]);
 
-  const navigate = useNavigate()
-  const notification = useNotification()
+  const navigate = useNavigate();
+  const notification = useNotification();
 
   const [, handleCopy] = useClipboard(`${order?.display_id!}`, {
     successDuration: 5500,
     onCopied: () => notification("Success", "Order ID copied", "success"),
-  })
+  });
 
   const [, handleCopyEmail] = useClipboard(order?.email!, {
     successDuration: 5500,
     onCopied: () => notification("Success", "Email copied", "success"),
-  })
+  });
 
   // @ts-ignore
-  useHotkeys("esc", () => navigate("/a/orders"))
-  useHotkeys("command+i", handleCopy)
+  useHotkeys("esc", () => navigate("/a/orders"));
+  useHotkeys("command+i", handleCopy);
 
-  const { getWidgets } = useWidgets()
+  const { getWidgets } = useWidgets();
 
   const handleDeleteOrder = async () => {
     const shouldDelete = await dialog({
@@ -207,20 +207,20 @@ const OrderDetails = () => {
       text: "Are you sure you want to cancel the order?",
       extraConfirmation: true,
       entityName: `order #${order?.display_id}`,
-    })
+    });
 
     if (!shouldDelete) {
-      return
+      return;
     }
 
     return cancelOrder.mutate(undefined, {
       onSuccess: () =>
         notification("Success", "Successfully canceled order", "success"),
       onError: (err) => notification("Error", getErrorMessage(err), "error"),
-    })
-  }
+    });
+  };
 
-  const allFulfillments = gatherAllFulfillments(order)
+  const allFulfillments = gatherAllFulfillments(order);
 
   const customerActionables: ActionType[] = [
     {
@@ -233,7 +233,7 @@ const OrderDetails = () => {
       icon: <RefreshIcon size={"20"} />,
       onClick: () => toggleTransferOrderModal(),
     },
-  ]
+  ];
 
   customerActionables.push({
     label: "Edit Shipping Address",
@@ -242,10 +242,10 @@ const OrderDetails = () => {
       setAddressModal({
         address: order?.shipping_address,
         type: AddressType.SHIPPING,
-      })
-      openAddressModal()
+      });
+      openAddressModal();
     },
-  })
+  });
 
   customerActionables.push({
     label: "Edit Billing Address",
@@ -254,10 +254,10 @@ const OrderDetails = () => {
       setAddressModal({
         address: order?.billing_address,
         type: AddressType.BILLING,
-      })
-      openAddressModal()
+      });
+      openAddressModal();
     },
-  })
+  });
 
   if (order?.email) {
     customerActionables.push({
@@ -266,9 +266,9 @@ const OrderDetails = () => {
       onClick: () => {
         setEmailModal({
           email: order?.email,
-        })
+        });
       },
-    })
+    });
   }
 
   if (!order && isLoading) {
@@ -276,16 +276,16 @@ const OrderDetails = () => {
       <div className="flex h-full w-full items-center justify-center">
         <Spinner size="small" variant="secondary" />
       </div>
-    )
+    );
   }
 
   if (!order && !isLoading) {
-    navigate("/404")
+    navigate("/404");
   }
 
-  const anyItemsToFulfil = order.items.some(
+  const anyItemsToFulfil = order?.items.some(
     (item: LineItem) => item.quantity > (item.fulfilled_quantity ?? 0)
-  )
+  );
 
   return (
     <div>
@@ -302,7 +302,7 @@ const OrderDetails = () => {
         ) : (
           <>
             <div>
-              {getWidgets("order.details.before").map((widget, i) => {
+              {getWidgets("order.details.before")?.map((widget, i) => {
                 return (
                   <WidgetContainer
                     key={i}
@@ -310,7 +310,7 @@ const OrderDetails = () => {
                     widget={widget}
                     entity={order}
                   />
-                )
+                );
               })}
             </div>
             <div className="flex space-x-4">
@@ -390,7 +390,7 @@ const OrderDetails = () => {
                   }
                 >
                   <div className="mt-6">
-                    {order.payments.map((payment) => (
+                    {order.payments?.map((payment) => (
                       <div className="flex flex-col" key={payment.id}>
                         <DisplayTotal
                           currency={order.currency_code}
@@ -466,7 +466,7 @@ const OrderDetails = () => {
                   }
                 >
                   <div className="mt-6">
-                    {order.shipping_methods.map((method) => (
+                    {order.shipping_methods?.map((method) => (
                       <div className="flex flex-col" key={method.id}>
                         <span className="inter-small-regular text-grey-50">
                           Shipping Method
@@ -551,7 +551,7 @@ const OrderDetails = () => {
                         widget={widget}
                         entity={order}
                       />
-                    )
+                    );
                   })}
                 </div>
                 <RawJSON data={order} title="Raw order" />
@@ -587,6 +587,7 @@ const OrderDetails = () => {
             {showRefund && (
               <CreateRefundModal
                 order={order}
+                initialReason="other"
                 onDismiss={() => setShowRefund(false)}
               />
             )}
@@ -612,7 +613,7 @@ const OrderDetails = () => {
         )}
       </OrderEditProvider>
     </div>
-  )
-}
+  );
+};
 
-export default OrderDetails
+export default OrderDetails;
