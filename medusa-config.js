@@ -58,6 +58,13 @@ const plugins = [
       confirmOrder: true,
     },
   },
+  {
+    resolve: `@medusajs/file-local`,
+    options: {
+      BACKEND_URL: "http://localhost:9000",
+      upload_dir: "uploads",
+    },
+  },
 ];
 
 const modules = {
